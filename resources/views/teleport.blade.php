@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        {{-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> --}}
+        {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> --}}
 
         <title>Teleport</title>
         
@@ -91,7 +93,7 @@
 
                         {{ csrf_field() }}
 
-                        <input type="text" name="searchQuery" placeholder="Wpisz miasto">
+                        <input type="text" name="searchQuery" id="searchQuery" placeholder="Wpisz miasto">
                         <input type="submit" value="Szukaj">
 
                     </form>
@@ -101,6 +103,48 @@
                     @endif
                     
                 </div>
+
+                <script>
+                    $('#searchQuery').keyup(function() {
+                    if($('#searchQuery').val().length >= 3) {
+                        var inputValue = $('#searchQuery').val();
+                        $.ajax({
+                        type: "POST",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        cache: false,
+                        encoding: "UTF-8",
+                        url: "<?php echo e(url('teleport')); ?>",
+                        beforeSend: function (xhr) {
+                        var token = $('meta[name="csrf_token"]').attr('content');
+                        if (token) {
+                            return xhr.setRequestHeader('X-CSRF-TOKEN', token);
+                            } 
+                        },
+                        data: {input: inputValue},
+                        success: function (response) { 
+                            document.getElementById("list").innerHTML = "";
+                            response.map(function (x) {
+                                var li = document.createElement("LI");
+                                li.innerHTML = "<a href=''#>"+x+"</a>";                     
+                                document.getElementById("list").appendChild(li);
+                            })
+                        },
+                        error: function (response) {
+                            $('#errormessage').html(response.message);
+                        }
+                        });
+                        }
+                        else {
+                            list.innerHTML = "Brak wyników.";
+                        }
+                    });
+                
+                </script>
+
+            <div id='list'></div>
+            
             </div>
         </div>
     </body>
